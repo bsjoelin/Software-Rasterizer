@@ -8,8 +8,8 @@ pub struct Float3 {
 
 impl Float3 {
     /// Creates new 3D vector
-    pub fn new(x: f64, y: f64, z: f64) -> Float3 {
-        Float3{ x, y, z }
+    pub fn new(x: f64, y: f64, z: f64) -> Self {
+        Self{ x, y, z }
     }
 
     /// Creates a Zero-vector
