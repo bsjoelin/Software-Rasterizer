@@ -60,7 +60,7 @@ impl Float2 {
     }
 }
 
-// impl<'a> Sub<&Float2> for &'a Float2 {
+/// Implement subtraction between Float2 references
 impl<'a, 'b> Sub<&'b Float2> for &'a Float2 {
     type Output = Float2;
 
