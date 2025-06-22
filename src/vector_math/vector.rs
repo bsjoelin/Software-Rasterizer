@@ -1,4 +1,4 @@
-use std::ops::{Sub};
+use std::ops::{Add, Mul, Sub};
 
 /// Float representation of 3D vector
 #[derive(Clone, Debug)]
@@ -60,11 +60,38 @@ impl Float2 {
     }
 }
 
+/// Implement addition between Float2 references
+impl<'a, 'b> Add<&'b Float2> for &'a Float2 {
+    type Output = Float2;
+
+    fn add(self, other: &'b Float2) -> Self::Output {
+        Float2 { x: self.x + other.x, y: self.y + other.y }
+    }
+}
+
 /// Implement subtraction between Float2 references
 impl<'a, 'b> Sub<&'b Float2> for &'a Float2 {
     type Output = Float2;
 
     fn sub(self, other: &'b Float2) -> Float2 {
         Float2 { x: self.x - other.x, y: self.y - other.y }
+    }
+}
+
+/// Implement multiplication between Float2 references
+impl<'a> Mul<f64> for &'a Float2 {
+    type Output = Float2;
+
+    fn mul(self, rhs: f64) -> Self::Output {
+        Float2 {x: self.x * rhs, y: self.y * rhs}
+    }
+}
+
+/// Implement multiplication between a Float2 (consumes) and an f64
+impl Mul<f64> for Float2 {
+    type Output = Float2;
+
+    fn mul(self, rhs: f64) -> Self::Output {
+        Float2 {x: self.x * rhs, y: self.y * rhs}
     }
 }
