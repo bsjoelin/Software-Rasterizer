@@ -9,9 +9,26 @@ use crate::vector_math::vector::*;
 use crate::vector_math::triangle::*;
 
 fn main() {
-    create_test_image();
+    create_test_images();
 }
 
+fn create_test_images() -> () {
+    const WIDTH: usize = 256;
+    const HEIGHT: usize = 256;
+
+    let mut image = vec![vec![Float3::zeros(); HEIGHT]; WIDTH];
+
+    let (points, _velocities, triangle_colors) = setup_triangles(WIDTH, HEIGHT);
+
+    render(&points, &triangle_colors, &mut image);
+
+    let file_name = format!("test_frame_{:03}.bmp", 0);
+    match write_image_to_file(image, file_name.to_string()) {
+        Err(why) => panic!("Failed to write frame {} to file {}: {}", 0, file_name, why),
+        Ok(_) => (),
+    };
+
+}
 
 fn render(vertices: &Vec<Float2>, colors: &Vec<Float3>, image: &mut Vec<Vec<Float3>>) -> () {
     if image.is_empty() {
@@ -72,6 +89,7 @@ fn random_color(rng: &mut ThreadRng) -> Float3 {
     )
 }
 
+#[allow(dead_code)]
 fn create_test_image() -> () {
     const WIDTH: usize = 128;
     const HEIGHT: usize = 128;
