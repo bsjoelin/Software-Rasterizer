@@ -1,4 +1,4 @@
-use std::{fs::File, io::{Error, Write}};
+use std::{fs::write, io};
 
 mod rendering;
 mod vector_math;
@@ -34,17 +34,19 @@ fn create_test_image() -> () {
 
     let file_name = "test_image.bmp";
     match write_image_to_file(image, file_name.to_string()) {
-        Err(why) => panic!("Failed to write to file {}: {}", file_name, why),
         Ok(_) => (),
+        Err(why) => match why.kind() {
+            io::ErrorKind::NotFound => panic!("The path {} is non-existent! Make sure the folder structure exists.", file_name.to_string()),
+            io::ErrorKind::PermissionDenied => panic!("You don't have permissions to write to file \"{}\"", file_name.to_string()),
+            _ => panic!("Failed to write to file {}: {}", file_name, why),
+        }
     };
 }
 
-fn write_image_to_file(image: Vec<Vec<Float3>>, name: String) -> Result<(), Error> {
+fn write_image_to_file(image: Vec<Vec<Float3>>, name: String) -> Result<(), io::Error> {
     let Ok(bmp_buffer) = image_to_bmp_buffer(image) else {
         panic!("Failed to convert image to bitmap!");
     };
-    let mut file = File::create(name).expect("File couldn't be created in write mode!");
-    file.write_all(&bmp_buffer)?;
-
+    write(name, &bmp_buffer)?;
     Ok(())
 }
