@@ -1,7 +1,7 @@
 use std::ops::{Add, Mul, Sub};
 
 /// Float representation of 3D vector
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct Float3 {
     pub x: f64,
     pub y: f64,

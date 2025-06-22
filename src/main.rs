@@ -12,6 +12,27 @@ fn main() {
     create_test_image();
 }
 
+
+fn render(vertices: &Vec<Float2>, colors: &Vec<Float3>, image: &mut Vec<Vec<Float3>>) -> () {
+    if image.is_empty() {
+        panic!("Image has zero width!")
+    }
+
+    for y in 0..image.len() {
+        for x in 0..image[0].len() {
+            for i in (0..vertices.len()).step_by(3) {
+                let p = Float2::new(x as f64, y as f64);
+
+                if point_in_triangle(
+                    &vertices[i], &vertices[i + 1], &vertices[i + 2], &p
+                ) {
+                    image[x][y] = colors[i / 3];
+                }
+            }
+        }
+    }
+}
+
 fn setup_triangles(screen_width: usize, screen_height: usize) -> (Vec<Float2>, Vec<Float2>, Vec<Float3>) {
     const TRIANGLE_COUNT: usize = 250;
 
