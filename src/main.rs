@@ -8,31 +8,42 @@ use crate::rendering::bitmap::image_to_bmp_buffer;
 use crate::vector_math::vector::*;
 use crate::vector_math::triangle::*;
 
+struct Scene {
+    image_buffer: Vec<Vec<Float3>>,
+    vertices: Vec<Float2>,
+    vertex_velocities: Vec<Float2>,
+    triangle_colors: Vec<Float3>
+}
+
 fn main() {
-    create_test_images();
+    let mut scene = create_test_images();
+
+    for i in 0..2 {
+        render(&scene.vertices, &scene.triangle_colors, &mut scene.image_buffer);
+    
+        // Save the current stage of the image buffer to a bitmap
+        let file_name = format!("test_frame_{:03}.bmp", i);
+        match write_image_to_file(&scene.image_buffer, file_name.to_string()) {
+            Err(why) => panic!("Failed to write frame {} to file {}: {}", 0, file_name, why),
+            Ok(_) => (),
+        };
+    }
 }
 
 /// Generate a bitmap image of randomly initialized triangles
-fn create_test_images() -> () {
+fn create_test_images() -> Scene {
     // Image dimensions
     const WIDTH: usize = 256;
     const HEIGHT: usize = 256;
 
     // Initialize image buffer
-    let mut image = vec![vec![Float3::zeros(); HEIGHT]; WIDTH];
+    // let mut image = vec![vec![Float3::zeros(); HEIGHT]; WIDTH];
+    let image = vec![vec![Float3::zeros(); HEIGHT]; WIDTH];
 
     // Get the random vertices, triangle velocities and colors
-    let (points, _velocities, triangle_colors) = setup_triangles(WIDTH, HEIGHT);
+    let (points, velocities, triangle_colors) = setup_triangles(WIDTH, HEIGHT);
 
-    // Render the triangles to the image buffer
-    render(&points, &triangle_colors, &mut image);
-
-    // Save the current stage of the image buffer to a bitmap
-    let file_name = format!("test_frame_{:03}.bmp", 0);
-    match write_image_to_file(image, file_name.to_string()) {
-        Err(why) => panic!("Failed to write frame {} to file {}: {}", 0, file_name, why),
-        Ok(_) => (),
-    };
+    Scene {image_buffer: image, vertices: points, vertex_velocities: velocities, triangle_colors: triangle_colors}
 
 }
 
@@ -139,7 +150,7 @@ fn create_test_image() -> () {
     }
 
     let file_name = "test_image.bmp";
-    match write_image_to_file(image, file_name.to_string()) {
+    match write_image_to_file(&image, file_name.to_string()) {
         Ok(_) => (),
         Err(why) => match why.kind() {
             io::ErrorKind::NotFound => panic!("The path {} is non-existent! Make sure the folder structure exists.", file_name.to_string()),
@@ -149,8 +160,8 @@ fn create_test_image() -> () {
     };
 }
 
-fn write_image_to_file(image: Vec<Vec<Float3>>, name: String) -> Result<(), io::Error> {
-    let Ok(bmp_buffer) = image_to_bmp_buffer(image) else {
+fn write_image_to_file(image: &Vec<Vec<Float3>>, name: String) -> Result<(), io::Error> {
+    let Ok(bmp_buffer) = image_to_bmp_buffer(&image) else {
         panic!("Failed to convert image to bitmap!");
     };
     write(name, &bmp_buffer)?;

@@ -1,6 +1,6 @@
 use crate::vector_math::vector::Float3;
 
-pub fn image_to_bmp_buffer(image: Vec<Vec<Float3>>) -> Result<Vec<u8>, <usize as TryInto<u32>>::Error> {
+pub fn image_to_bmp_buffer(image: &Vec<Vec<Float3>>) -> Result<Vec<u8>, <usize as TryInto<u32>>::Error> {
     if image.is_empty() {
         panic!("Image has zero width!")
     }
