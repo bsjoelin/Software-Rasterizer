@@ -1,4 +1,5 @@
 use rand::{rng, rngs::ThreadRng, Rng};
+use std::iter::zip;
 use std::{fs::write, io};
 
 mod rendering;
@@ -18,7 +19,7 @@ struct Scene {
 fn main() {
     let mut scene = create_test_images();
 
-    for i in 0..2 {
+    for i in 0..5 {
         render(&scene.vertices, &scene.triangle_colors, &mut scene.image_buffer);
     
         // Save the current stage of the image buffer to a bitmap
@@ -27,6 +28,14 @@ fn main() {
             Err(why) => panic!("Failed to write frame {} to file {}: {}", 0, file_name, why),
             Ok(_) => (),
         };
+
+        update(&mut scene.vertices, &scene.vertex_velocities, 0.5)
+    }
+}
+
+fn update(vertices: &mut Vec<Float2>, velocities: &Vec<Float2>, delta_t: f64) {
+    for (vert, vel) in zip(vertices, velocities) {
+        *vert += vel * delta_t;
     }
 }
 

@@ -1,4 +1,4 @@
-use std::ops::{Add, Mul, Sub};
+use std::ops::{Add, AddAssign, Mul, Sub};
 
 /// Float representation of 3D vector
 #[derive(Clone, Copy, Debug)]
@@ -68,6 +68,23 @@ impl<'a, 'b> Add<&'b Float2> for &'a Float2 {
         Float2 { x: self.x + other.x, y: self.y + other.y }
     }
 }
+
+/// Implement in-place addition using Float2 reference
+impl<'b> AddAssign<&'b Float2> for Float2 {    
+    fn add_assign(&mut self, other: &'b Float2) {
+        self.x += other.x;
+        self.y += other.y;
+    }
+}
+
+/// Implement in-place addition using Float2 (consumes)
+impl AddAssign<Float2> for Float2 {
+    fn add_assign(&mut self, other: Float2) {
+        self.x += other.x;
+        self.y += other.y;
+    }
+}
+
 
 /// Implement subtraction between Float2 references
 impl<'a, 'b> Sub<&'b Float2> for &'a Float2 {
