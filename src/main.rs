@@ -8,12 +8,13 @@ mod vector_math;
 use crate::rendering::bitmap::image_to_bmp_buffer;
 use crate::vector_math::vector::*;
 use crate::vector_math::triangle::*;
+use crate::rendering::pipeline::ImageBuffer;
 
 const WIDTH: usize = 256;
 const HEIGHT: usize = 256;
 
 struct Scene {
-    image_buffer: Vec<Vec<Float3>>,
+    image_buffer: ImageBuffer,
     vertices: Vec<Float2>,
     vertex_velocities: Vec<Float2>,
     triangle_colors: Vec<Float3>
@@ -33,7 +34,7 @@ fn main() {
         };
 
         update(&mut scene.vertices, &mut scene.vertex_velocities, 0.25);
-        clear_background(&mut scene.image_buffer);
+        scene.image_buffer.clear();
     }
 }
 
@@ -50,19 +51,10 @@ fn update(vertices: &mut Vec<Float2>, velocities: &mut Vec<Float2>, delta_t: f64
     }
 }
 
-fn clear_background(image_buffer: &mut Vec<Vec<Float3>>) {
-    for y in 0..image_buffer.len() {
-        for x in 0..image_buffer[0].len() {
-            image_buffer[x][y] = Float3::zeros();
-        }
-    }
-}
-
 /// Generate a bitmap image of randomly initialized triangles
 fn create_test_images() -> Scene {
     // Initialize image buffer
-    // let mut image = vec![vec![Float3::zeros(); HEIGHT]; WIDTH];
-    let image = vec![vec![Float3::zeros(); HEIGHT]; WIDTH];
+    let image = ImageBuffer::new(WIDTH, HEIGHT);
 
     // Get the random vertices, triangle velocities and colors
     let (points, velocities, triangle_colors) = setup_triangles(WIDTH, HEIGHT);
@@ -72,15 +64,15 @@ fn create_test_images() -> Scene {
 }
 
 /// Render triangles to an image buffer using (un-optimized) rasterization
-fn render(vertices: &Vec<Float2>, colors: &Vec<Float3>, image: &mut Vec<Vec<Float3>>) -> () {
+fn render(vertices: &Vec<Float2>, colors: &Vec<Float3>, image: &mut ImageBuffer) -> () {
     // For now, zero-size images cause a program panic
-    if image.is_empty() {
+    if image.get_size() == 0 {
         panic!("Image has zero width!")
     }
 
     // Loop over the image pixels
-    for y in 0..image.len() {
-        for x in 0..image[0].len() {
+    for y in 0..image.get_height() {
+        for x in 0..image.get_width() {
             // Loop over the triangles
             for i in (0..vertices.len()).step_by(3) {
                 let p = Float2::new(x as f64, y as f64);
@@ -90,7 +82,7 @@ fn render(vertices: &Vec<Float2>, colors: &Vec<Float3>, image: &mut Vec<Vec<Floa
                     &vertices[i], &vertices[i + 1], &vertices[i + 2], &p
                 ) {
                     // If yes, then we apply the triangles color to the image buffer
-                    image[x][y] = colors[i / 3];
+                    image[[x, y]] = colors[i / 3];
                 }
             }
         }
@@ -153,7 +145,7 @@ fn random_color(rng: &mut ThreadRng) -> Float3 {
 
 #[allow(dead_code)]
 fn create_test_image() -> () {
-    let mut image = vec![vec![Float3::zeros(); HEIGHT]; WIDTH];
+    let mut image = ImageBuffer::new(WIDTH, HEIGHT);
     
     let a = Float2::new(0.2 * WIDTH as f64, 0.2 * HEIGHT as f64);
     let b = Float2::new(0.7 * WIDTH as f64, 0.4 * HEIGHT as f64);
@@ -165,7 +157,7 @@ fn create_test_image() -> () {
             let p = Float2::new(x as f64, y as f64);
 
             if point_in_triangle(&a, &b, &c, &p) {
-                image[x][y] = Float3::new(0.0, 0.0, 1.0);
+                image[[x, y]] = Float3::new(0.0, 0.0, 1.0);
             }
         }
     }
@@ -181,7 +173,7 @@ fn create_test_image() -> () {
     };
 }
 
-fn write_image_to_file(image: &Vec<Vec<Float3>>, name: String) -> Result<(), io::Error> {
+fn write_image_to_file(image: &ImageBuffer, name: String) -> Result<(), io::Error> {
     let Ok(bmp_buffer) = image_to_bmp_buffer(&image) else {
         panic!("Failed to convert image to bitmap!");
     };

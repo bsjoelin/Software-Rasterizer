@@ -1,11 +1,12 @@
 use crate::vector_math::vector::Float3;
+use crate::rendering::pipeline::ImageBuffer;
 
-pub fn image_to_bmp_buffer(image: &Vec<Vec<Float3>>) -> Result<Vec<u8>, <usize as TryInto<u32>>::Error> {
-    if image.is_empty() {
+pub fn image_to_bmp_buffer(image: &ImageBuffer) -> Result<Vec<u8>, <usize as TryInto<u32>>::Error> {
+    if image.get_size() == 0 {
         panic!("Image has zero width!")
     }
-    let image_width: u32 = image.len().try_into()?;
-    let image_height: u32 = image[0].len().try_into()?;
+    let image_width: u32 = image.get_width().try_into()?;
+    let image_height: u32 = image.get_height().try_into()?;
 
     let byte_counts = [14, 40, 4*image_width*image_height];
 
@@ -39,7 +40,7 @@ pub fn image_to_bmp_buffer(image: &Vec<Vec<Float3>>) -> Result<Vec<u8>, <usize a
     // --- Write image data ---
     for y in 0..image_height {
         for x in 0..image_width {
-            buffer.extend(convert_to_color(&image[x as usize][y as usize]));
+            buffer.extend(convert_to_color(&image[[x as usize, y as usize]]));
             buffer.push(0u8);
         }
     }
