@@ -41,7 +41,7 @@ fn main() {
 fn update(vertices: &mut Vec<Float2>, velocities: &mut Vec<Float2>, delta_t: f64) {
     for (vert, vel) in zip(vertices, velocities) {
         *vert += &*vel * delta_t;
-// Flip the velocities, if the points end up outside the render box
+        // Flip the velocities, if the points end up outside the render box
         if vert.x < 0f64 || vert.x > WIDTH as f64{
             vel.x *= -1f64;
         }
@@ -63,25 +63,40 @@ fn create_test_images() -> Scene {
 
 }
 
-/// Render triangles to an image buffer using (un-optimized) rasterization
+/// Render triangles to an image buffer using rasterization
 fn render(vertices: &Vec<Float2>, colors: &Vec<Float3>, image: &mut ImageBuffer) -> () {
     // For now, zero-size images cause a program panic
     if image.get_size() == 0 {
         panic!("Image has zero width!")
     }
 
-    // Loop over the image pixels
-    for y in 0..image.get_height() {
-        for x in 0..image.get_width() {
-            // Loop over the triangles
-            for i in (0..vertices.len()).step_by(3) {
+    // Loop over the triangles
+    for i in (0..vertices.len()).step_by(3) {
+        // Extract vertices
+        let a = &vertices[i];
+        let b = &vertices[i + 1];
+        let c = &vertices[i + 2];
+
+        // Determine bounding box
+        let min_x = f64::min(a.x, f64::min(b.x, c.x));
+        let min_y = f64::min(a.y, f64::min(b.y, c.y));
+        let max_x = f64::max(a.x, f64::max(b.x, c.x));
+        let max_y = f64::max(a.y, f64::max(b.y, c.y));
+
+        // Convert bounding box to integers of the image buffer
+        let bbox_start_x = usize::clamp(min_x as usize, 0, image.get_width() - 1);
+        let bbox_start_y = usize::clamp(min_y as usize, 0, image.get_height() - 1);
+        let bbox_end_x = usize::clamp(max_x as usize + 1, 0, image.get_width() - 1);
+        let bbox_end_y = usize::clamp(max_y as usize + 1, 0, image.get_height() - 1);
+
+        // Loop over pixels in the bounding box
+        for y in bbox_start_y..=bbox_end_y {
+            for x in bbox_start_x..=bbox_end_x {
                 let p = Float2::new(x as f64, y as f64);
 
                 // Is the current pixel inside the current triangle?
-                if point_in_triangle(
-                    &vertices[i], &vertices[i + 1], &vertices[i + 2], &p
-                ) {
-                    // If yes, then we apply the triangles color to the image buffer
+                if point_in_triangle(a, b, c, &p) {
+                    // Apply the triangle's color to the image buffer
                     image[[x, y]] = colors[i / 3];
                 }
             }
