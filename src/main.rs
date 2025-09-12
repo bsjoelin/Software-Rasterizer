@@ -23,7 +23,7 @@ fn main() {
         render(&scene.vertices, &scene.triangle_colors, &mut scene.image_buffer);
     
         // Save the current stage of the image buffer to a bitmap
-        let file_name = format!("test_frame_{:03}.bmp", i);
+        let file_name = format!("images\\test_frame_{:03}.bmp", i);
         match write_image_to_file(&scene.image_buffer, file_name.to_string()) {
             Err(why) => panic!("Failed to write frame {} to file {}: {}", 0, file_name, why),
             Ok(_) => (),
