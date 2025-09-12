@@ -32,13 +32,29 @@ fn main() {
             Ok(_) => (),
         };
 
-        update(&mut scene.vertices, &scene.vertex_velocities, 0.5)
+        update(&mut scene.vertices, &mut scene.vertex_velocities, 0.25);
+        clear_background(&mut scene.image_buffer);
     }
 }
 
-fn update(vertices: &mut Vec<Float2>, velocities: &Vec<Float2>, delta_t: f64) {
+fn update(vertices: &mut Vec<Float2>, velocities: &mut Vec<Float2>, delta_t: f64) {
     for (vert, vel) in zip(vertices, velocities) {
-        *vert += vel * delta_t;
+        *vert += &*vel * delta_t;
+// Flip the velocities, if the points end up outside the render box
+        if vert.x < 0f64 || vert.x > WIDTH as f64{
+            vel.x *= -1f64;
+        }
+        if vert.y < 0f64 || vert.y > HEIGHT as f64 {
+            vel.y *= -1f64;
+        }
+    }
+}
+
+fn clear_background(image_buffer: &mut Vec<Vec<Float3>>) {
+    for y in 0..image_buffer.len() {
+        for x in 0..image_buffer[0].len() {
+            image_buffer[x][y] = Float3::zeros();
+        }
     }
 }
 
