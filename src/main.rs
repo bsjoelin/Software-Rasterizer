@@ -9,6 +9,9 @@ use crate::rendering::bitmap::image_to_bmp_buffer;
 use crate::vector_math::vector::*;
 use crate::vector_math::triangle::*;
 
+const WIDTH: usize = 256;
+const HEIGHT: usize = 256;
+
 struct Scene {
     image_buffer: Vec<Vec<Float3>>,
     vertices: Vec<Float2>,
@@ -41,10 +44,6 @@ fn update(vertices: &mut Vec<Float2>, velocities: &Vec<Float2>, delta_t: f64) {
 
 /// Generate a bitmap image of randomly initialized triangles
 fn create_test_images() -> Scene {
-    // Image dimensions
-    const WIDTH: usize = 256;
-    const HEIGHT: usize = 256;
-
     // Initialize image buffer
     // let mut image = vec![vec![Float3::zeros(); HEIGHT]; WIDTH];
     let image = vec![vec![Float3::zeros(); HEIGHT]; WIDTH];
@@ -138,9 +137,6 @@ fn random_color(rng: &mut ThreadRng) -> Float3 {
 
 #[allow(dead_code)]
 fn create_test_image() -> () {
-    const WIDTH: usize = 128;
-    const HEIGHT: usize = 128;
-
     let mut image = vec![vec![Float3::zeros(); HEIGHT]; WIDTH];
     
     let a = Float2::new(0.2 * WIDTH as f64, 0.2 * HEIGHT as f64);
