@@ -1,5 +1,5 @@
 use crate::vector_math::vector::Float3;
-use crate::rendering::pipeline::ImageBuffer;
+use crate::rendering::image::ImageBuffer;
 
 pub fn image_to_bmp_buffer(image: &ImageBuffer) -> Result<Vec<u8>, <usize as TryInto<u32>>::Error> {
     if image.get_size() == 0 {

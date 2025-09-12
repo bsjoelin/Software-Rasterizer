@@ -1,53 +1,61 @@
-use std::ops::{Index, IndexMut};
+use crate::rendering::image::ImageBuffer;
+use crate::vector_math::{vector::*, triangle::*};
 
-use crate::vector_math::vector::Float3;
 
-#[derive(Debug)]
-pub struct ImageBuffer{
-    pub buffer: Vec<Float3>,
-    width: usize,
-    height: usize,
+/// Render triangles to an image buffer using rasterization
+pub fn render2d(vertices: &Vec<Float2>, colors: &Vec<Float3>, image: &mut ImageBuffer) -> () {
+    // For now, zero-size images cause a program panic
+    if image.get_size() == 0 {
+        panic!("Image has no size!")
+    }
+
+    // Loop over the triangles
+    for i in (0..vertices.len()).step_by(3) {
+        // Extract vertices
+        let a = &vertices[i];
+        let b = &vertices[i + 1];
+        let c = &vertices[i + 2];
+
+        let bbox = determine_bounding_box(a, b, c, image.get_width(), image.get_height());
+        paint_in_triangle(a, b, c, bbox, colors[i / 3], image);
+        
+    }
 }
 
-impl ImageBuffer {
-    pub fn new(width: usize, height: usize) -> Self {
-        let size = width * height;
-        let mut buffer = Vec::new();
-        buffer.reserve(size);
-        for _ in 0..size {
-            buffer.push(Float3::zeros());
-        }
-        Self{ buffer, width, height}
-    }
+fn paint_in_triangle(a: &Float2, b: &Float2, c: &Float2, bbox: BBox, color: Float3, image: &mut ImageBuffer) -> () {
+    // Loop over pixels in the bounding box
+    for y in bbox.min_y..=bbox.max_y {
+        for x in bbox.min_x..=bbox.max_x {
+            let p = Float2::new(x as f64, y as f64);
 
-    pub fn get_size(&self) -> usize {
-        self.width * self.height
-    }
-
-    pub fn get_width(&self) -> usize {
-        self.width
-    }
-
-    pub fn get_height(&self) -> usize {
-        self.height
-    }
-
-    pub fn clear(&mut self) -> () {
-        for i in 0..self.get_size() {
-            self.buffer[i] = Float3::zeros();
+            // Is the current pixel inside the current triangle?
+            if point_in_triangle(a, b, c, &p) {
+                // Apply the triangle's color to the image buffer
+                image[[x, y]] = color;
+            }
         }
     }
 }
 
-impl Index<[usize; 2]> for ImageBuffer {
-    type Output = Float3;
-    fn index(&self, index: [usize; 2]) -> &Self::Output {
-        &self.buffer[index[0] + index[1] * self.width]
-    }
+struct BBox {
+    min_x: usize,
+    min_y: usize,
+    max_x: usize,
+    max_y: usize
 }
 
-impl IndexMut<[usize; 2]> for ImageBuffer {
-    fn index_mut(&mut self, index: [usize; 2]) -> &mut Self::Output {
-        &mut self.buffer[index[0] + index[1] * self.width]
-    }
+fn determine_bounding_box(a: &Float2, b: &Float2, c: &Float2, width: usize, height: usize) -> BBox {
+    // Determine bounding box
+    let min_x = f64::min(a.x, f64::min(b.x, c.x));
+    let min_y = f64::min(a.y, f64::min(b.y, c.y));
+    let max_x = f64::max(a.x, f64::max(b.x, c.x));
+    let max_y = f64::max(a.y, f64::max(b.y, c.y));
+
+    // Convert bounding box to integers of the image buffer
+    let bbox_start_x = usize::clamp(min_x as usize, 0, width - 1);
+    let bbox_start_y = usize::clamp(min_y as usize, 0, height - 1);
+    let bbox_end_x = usize::clamp(max_x as usize + 1, 0, width - 1);
+    let bbox_end_y = usize::clamp(max_y as usize + 1, 0, height - 1);
+
+    BBox { min_x: bbox_start_x, min_y: bbox_start_y, max_x: bbox_end_x, max_y: bbox_end_y }
 }
