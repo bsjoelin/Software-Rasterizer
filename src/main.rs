@@ -104,9 +104,9 @@ fn render(vertices: &Vec<Float2>, colors: &Vec<Float3>, image: &mut ImageBuffer)
     }
 }
 
-/// Inintialize triangles with random positions, velocities and colors. Returns the flattened vertices vector, the velocities and the traingle colors.
+/// Initialize triangles with random positions, velocities and colors. Returns the flattened vertices vector, the velocities and the triangle colors.
 fn setup_triangles(screen_width: usize, screen_height: usize) -> (Vec<Float2>, Vec<Float2>, Vec<Float3>) {
-    const TRIANGLE_COUNT: usize = 250;
+    const TRIANGLE_COUNT: usize = 50;
 
     // Initialize data arrays with 0-vectors
     let mut points = vec![Float2::zeros(); TRIANGLE_COUNT * 3];
