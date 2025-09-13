@@ -44,7 +44,7 @@ impl Transform {
 /// Transform vertex position into screen-space position [pixel coordinates]
 /// 
 /// The fov must be in radians
-pub fn vertex_to_screen(vertex: &Float3, transform: &Transform, screen_size: &Float2, fov: f64) -> Float2 {
+pub fn vertex_to_screen(vertex: &Float3, transform: &Transform, screen_size: &Float2, fov: f64) -> Float3 {
     let vertex_world = transform.vertex_to_world(vertex);
 
     let world_screen_height = f64::tan(fov/2.0) * 2.0;
@@ -52,5 +52,5 @@ pub fn vertex_to_screen(vertex: &Float3, transform: &Transform, screen_size: &Fl
 
     let mut pixel_offset = Float2::new(vertex_world.x, vertex_world.y) * pixel_factor;
     pixel_offset += screen_size / 2.0;
-    pixel_offset
+    Float3::new(pixel_offset.x, pixel_offset.y, vertex_world.z)
 }

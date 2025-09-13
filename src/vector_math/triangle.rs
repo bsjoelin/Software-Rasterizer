@@ -1,21 +1,29 @@
-use crate::vector_math::vector::Float2;
+use crate::vector_math::vector::{Float2, Float3};
 
 /// Determine whether `point` is inside the triangle spanned by `v1`->`v2`->`v3`->`v1`.
-pub fn point_in_triangle(v1: &Float2, v2: &Float2, v3: &Float2, point: &Float2) -> bool {
-    let right_of_12 = point_right_of_line(v1, v2, point);
-    let right_of_23 = point_right_of_line(v2, v3, point);
-    let right_of_31 = point_right_of_line(v3, v1, point);
-    // If the points are all right of, we are inside. Assumes clock-wise winding of vertices
-    // If the point is on the same side, we are inside it
-    right_of_12 && right_of_23 && right_of_31
+pub fn point_in_triangle(v1: &Float2, v2: &Float2, v3: &Float2, point: &Float2) -> (bool, Float3) {
+    let area_12p = signed_triangle_area(v1, v2, point);
+    let area_23p = signed_triangle_area(v2, v3, point);
+    let area_31p = signed_triangle_area(v3, v1, point);
+    // If the points are all right of, we are inside. Assumes clockwise winding of vertices
+    let inside = area_12p >= 0.0 && area_23p >= 0.0 && area_31p >= 0.0;
+
+    // Calculate normalized weights for trilinear interpolation
+    let total_area = area_12p + area_23p + area_31p;
+    if total_area < 1e-16 {  // Escape early if the triangle has no area
+        return (false, Float3::zeros())
+    }
+    let inverse_area = 1.0 / total_area;
+    let weights = Float3::new(area_12p * inverse_area, area_23p * inverse_area, area_31p * inverse_area);
+
+    (inside, weights)
 }
 
-/// Determine if `point` is to the _right_ of the line from `a` to `b`.
-fn point_right_of_line(a: &Float2, b: &Float2, point: &Float2) -> bool {
-    // The dot product between a->point and a->b is positive if they point in 
-    // the same direction. By rotating a->b 90 degrees clockwise, we can thus
-    // determine if a->point is to the right of a->b (>0) or left (<0)
-    let line_normal = (b - a).perpendicular();
-    let ap = point - a;
-    ap.dot(&line_normal) >= 0.0
+/// Calculate the area of the triangle abc.
+/// 
+/// A positive area means clockwise winding of the triangle and counter-clockwise for negative area
+pub fn signed_triangle_area(a: &Float2, b: &Float2, c: &Float2) -> f64 {
+    let ac = c - a;
+    let ab_normal = (b - a).perpendicular();
+    ac.dot(&ab_normal) / 2.0
 }

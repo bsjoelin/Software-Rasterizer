@@ -19,6 +19,11 @@ impl Float3 {
         Self::new(0.0, 0.0, 0.0)
     }
 
+    /// Dot product between two Float3 references
+    pub fn dot(&self, other: &Self) -> f64 {
+        self.x * other.x + self.y * other.y + self.z * other.z
+    }
+
     /// Alias for the x-component. Useful for working with colors.
     pub fn r(&self) -> f64 {
         self.x

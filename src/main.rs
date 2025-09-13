@@ -31,7 +31,7 @@ fn main() {
     let fov = 60.0;
 
     for i in 0..20 {
-        pipeline::render3d(&model, &mut render_target.image_buffer, fov);
+        pipeline::render3d(&model, &mut render_target, fov);
     
         // Save the current stage of the image buffer to a bitmap
         let file_name = format!("images/monkey_frame_{:03}.bmp", i);
@@ -52,7 +52,7 @@ fn old_main() {
     let mut render_target = RenderTarget::new(WIDTH, HEIGHT);
 
     for i in 0..5 {
-        pipeline::render2d(&scene.vertices, &scene.triangle_colors, &mut render_target.image_buffer);
+        pipeline::render2d(&scene.vertices, &scene.triangle_colors, &mut render_target);
     
         // Save the current stage of the image buffer to a bitmap
         let file_name = format!("images/test_frame_{:03}.bmp", i);
@@ -192,7 +192,8 @@ fn create_test_image() -> () {
 
             let p = Float2::new(x as f64, y as f64);
 
-            if point_in_triangle(&a, &b, &c, &p) {
+            let (inside, _) = point_in_triangle(&a, &b, &c, &p);
+            if inside {
                 image[[x, y]] = Float3::new(0.0, 0.0, 1.0);
             }
         }
