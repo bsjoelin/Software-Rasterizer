@@ -31,7 +31,7 @@ struct Model {
 fn main() {
     let cube_model = load_cube_model();
     let mut image_buffer = ImageBuffer::new(WIDTH, HEIGHT);
-    let mut transform = Transform::new(0.0);
+    let mut transform = Transform::new(0.0, 0.0);
 
     for i in 0..20 {
         pipeline::render3d(&cube_model.vertices, &cube_model.triangle_colors, &transform, &mut image_buffer);
@@ -44,6 +44,7 @@ fn main() {
         };
 
         transform.yaw += 0.1;
+        transform.pitch += 0.02;
         image_buffer.clear();
     }
 }

@@ -1,24 +1,43 @@
 use crate::vector_math::vector::{Float2, Float3};
 
 pub struct Transform {
+    /// Rotation around the x-axis
+    pub pitch: f64,
+    /// Rotation around the z-axis (the up)
     pub yaw: f64,
 }
 
 impl Transform {
-    pub fn new(rotation_around_z: f64) -> Self {
-        Self { yaw: rotation_around_z }
+    pub fn new(rotation_around_x: f64, rotation_around_z: f64) -> Self {
+        Self { pitch: rotation_around_x, yaw: rotation_around_z }
     }
 
     fn get_basis_vectors(&self) -> (Float3, Float3, Float3) {
-        let ihat = Float3::new(self.yaw.cos(), 0.0, self.yaw.sin());
-        let jhat = Float3::new(0.0, 1.0, 0.0);
-        let khat = Float3::new(-self.yaw.sin(), 0.0, self.yaw.cos());
+        let (sp, cp) = self.pitch.sin_cos();
+        let (sy, cy) = self.yaw.sin_cos();
+
+        // Compute yaw basis vectors
+        let ihat_yaw = Float3::new(cy, 0.0, sy);
+        let jhat_yaw = Float3::new(0.0, 1.0, 0.0);
+        let khat_yaw = Float3::new(-sy, 0.0, cy);
+        // Compute pitch basis vectors
+        let ihat_pitch = Float3::new(1.0, 0.0, 0.0);
+        let jhat_pitch = Float3::new(0.0, cp, -sp);
+        let khat_pitch = Float3::new(0.0, sp, cp);
+        // Apply yaw transformation to pitch basis vectors
+        let ihat = self.transform_vector(&ihat_yaw, &jhat_yaw, &khat_yaw, &ihat_pitch);
+        let jhat = self.transform_vector(&ihat_yaw, &jhat_yaw, &khat_yaw, &jhat_pitch);
+        let khat = self.transform_vector(&ihat_yaw, &jhat_yaw, &khat_yaw, &khat_pitch);
         (ihat, jhat, khat)
     }
 
     pub fn vertex_to_world(&self, vertex: &Float3) -> Float3 {
         let (ihat, jhat, khat) = self.get_basis_vectors();
-        ihat * vertex.x + jhat * vertex.y + khat * vertex.z
+        self.transform_vector(&ihat, &jhat, &khat, vertex)
+    }
+
+    fn transform_vector(&self, ih: &Float3, jh: &Float3, kh: &Float3, vertex: &Float3) -> Float3 {
+        ih * vertex.x + jh * vertex.y + kh * vertex.z
     }
 }
 

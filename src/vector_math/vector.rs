@@ -56,6 +56,14 @@ impl Mul<f64> for Float3 {
     }
 }
 
+impl Mul<f64> for &Float3 {
+    type Output = Float3;
+    fn mul(self, rhs: f64) -> Self::Output {
+        *self * rhs
+    }
+}
+
+
 #[derive(Clone, Debug)]
 pub struct Float2 {
     pub x: f64,
