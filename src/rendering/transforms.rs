@@ -14,6 +14,10 @@ impl Transform {
         Self { pitch: rotation_around_x, yaw: rotation_around_z, position }
     }
 
+    pub fn empty() -> Self {
+        Self { pitch: 0.0, yaw: 0.0, position: Float3::zeros() }
+    }
+
     fn get_basis_vectors(&self) -> (Float3, Float3, Float3) {
         // Trigonometry of rotation angles
         let (sp, cp) = self.pitch.sin_cos();

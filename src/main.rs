@@ -16,8 +16,8 @@ use crate::rendering::transforms::Transform;
 use crate::vector_math::triangle::*;
 use crate::vector_math::vector::*;
 
-const WIDTH: usize = 256;
-const HEIGHT: usize = 256;
+const WIDTH: usize = 512;
+const HEIGHT: usize = 512;
 
 struct Scene {
     vertices: Vec<Float2>,
@@ -26,22 +26,22 @@ struct Scene {
 }
 
 fn main() {
-    let mut cube_model = load_cube_model();
+    let mut model = load_suzanne_model();
     let mut image_buffer = ImageBuffer::new(WIDTH, HEIGHT);
     let fov = 60.0;
 
     for i in 0..20 {
-        pipeline::render3d(&cube_model, &mut image_buffer, fov);
+        pipeline::render3d(&model, &mut image_buffer, fov);
     
         // Save the current stage of the image buffer to a bitmap
-        let file_name = format!("images/cube_frame_{:03}.bmp", i);
+        let file_name = format!("images/monkey_frame_{:03}.bmp", i);
         match write_image_to_file(&image_buffer, file_name.to_string()) {
             Err(why) => panic!("Failed to write frame {} to file {}: {}", 0, file_name, why),
             Ok(_) => (),
         };
 
-        cube_model.transform.yaw += 0.1;
-        cube_model.transform.pitch += 0.02;
+        model.transform.yaw += 0.1;
+        model.transform.pitch += 0.02;
         image_buffer.clear();
     }
 }
@@ -79,9 +79,21 @@ fn update(vertices: &mut Vec<Float2>, velocities: &mut Vec<Float2>, delta_t: f64
     }
 }
 
+#[allow(dead_code)]
 fn load_cube_model() -> Model {
-    let obj_file = "models/cube.obj";
-    let cube_model_points = match read_to_string(obj_file) {
+    let mut model = load_model("models/cube.obj");
+    model.transform.position += Float3::new(0.0, 0.0, 5.0);
+    model
+}
+
+fn load_suzanne_model() -> Model {
+    let mut model = load_model("models/suzanne.obj");
+    model.transform.position += Float3::new(0.0, 0.0, 3.0);
+    model
+}
+
+fn load_model(obj_file: &str) -> Model {
+    let model_vertices = match read_to_string(obj_file) {
         Ok(obj_str) => crate::formats::obj_format::load_obj_file(obj_str),
         Err(why) => match why.kind() {
             io::ErrorKind::NotFound => panic!("The path {} is non-existent! Make sure the folder structure exists.", obj_file),
@@ -90,18 +102,17 @@ fn load_cube_model() -> Model {
         }
     };
 
-    // Initialize a randomizer
+    // Randomize the triangle colors
     let mut g = rng();
     let mut triangle_colors: Vec<Float3> = Vec::new();
-    for _ in 0..(cube_model_points.len() / 3) {
+    for _ in 0..(model_vertices.len() / 3) {
         triangle_colors.push(random_color(&mut g))
     }
-    let position = Float3::new(0.0, 0.0, 5.0);
 
     Model { 
-        vertices: cube_model_points, 
+        vertices: model_vertices, 
         triangle_colors, 
-        transform: Transform::new(0.0, 0.0, position)
+        transform: Transform::empty()
     }
 }
 
