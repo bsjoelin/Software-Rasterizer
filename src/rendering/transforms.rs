@@ -20,7 +20,7 @@ impl Transform {
         // Combined pitch and yaw - worked out by hand
         let ihat = Float3::new(cy, 0.0, sy);
         let jhat = Float3::new(sp*sy, cp, -sp*cy);
-        let khat = Float3::new(-cp*sy, sp, sp*cy);
+        let khat = Float3::new(-cp*sy, sp, cp*cy);
 
         (ihat, jhat, khat)
     }
