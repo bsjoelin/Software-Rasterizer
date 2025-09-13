@@ -13,21 +13,15 @@ impl Transform {
     }
 
     fn get_basis_vectors(&self) -> (Float3, Float3, Float3) {
+        // Trigonometry of rotation angles
         let (sp, cp) = self.pitch.sin_cos();
         let (sy, cy) = self.yaw.sin_cos();
 
-        // Compute yaw basis vectors
-        let ihat_yaw = Float3::new(cy, 0.0, sy);
-        let jhat_yaw = Float3::new(0.0, 1.0, 0.0);
-        let khat_yaw = Float3::new(-sy, 0.0, cy);
-        // Compute pitch basis vectors
-        let ihat_pitch = Float3::new(1.0, 0.0, 0.0);
-        let jhat_pitch = Float3::new(0.0, cp, -sp);
-        let khat_pitch = Float3::new(0.0, sp, cp);
-        // Apply yaw transformation to pitch basis vectors
-        let ihat = self.transform_vector(&ihat_yaw, &jhat_yaw, &khat_yaw, &ihat_pitch);
-        let jhat = self.transform_vector(&ihat_yaw, &jhat_yaw, &khat_yaw, &jhat_pitch);
-        let khat = self.transform_vector(&ihat_yaw, &jhat_yaw, &khat_yaw, &khat_pitch);
+        // Combined pitch and yaw - worked out by hand
+        let ihat = Float3::new(cy, 0.0, sy);
+        let jhat = Float3::new(sp*sy, cp, -sp*cy);
+        let khat = Float3::new(-cp*sy, sp, sp*cy);
+
         (ihat, jhat, khat)
     }
 
