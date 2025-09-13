@@ -1,15 +1,18 @@
 use rand::{rng, rngs::ThreadRng, Rng};
+use std::fs::{read_to_string, write};
+use std::io;
 use std::iter::zip;
-use std::{fs::write, io};
 
+mod formats;
 mod rendering;
 mod vector_math;
 
 use crate::rendering::bitmap::image_to_bmp_buffer;
-use crate::vector_math::vector::*;
-use crate::vector_math::triangle::*;
 use crate::rendering::image::ImageBuffer;
 use crate::rendering::pipeline;
+use crate::rendering::transforms::Transform;
+use crate::vector_math::triangle::*;
+use crate::vector_math::vector::*;
 
 const WIDTH: usize = 256;
 const HEIGHT: usize = 256;
@@ -20,7 +23,33 @@ struct Scene {
     triangle_colors: Vec<Float3>
 }
 
+struct Model {
+    vertices: Vec<Float3>,
+    triangle_colors: Vec<Float3>,
+}
+
 fn main() {
+    let cube_model = load_cube_model();
+    let mut image_buffer = ImageBuffer::new(WIDTH, HEIGHT);
+    let mut transform = Transform::new(0.0);
+
+    for i in 0..20 {
+        pipeline::render3d(&cube_model.vertices, &cube_model.triangle_colors, &transform, &mut image_buffer);
+    
+        // Save the current stage of the image buffer to a bitmap
+        let file_name = format!("images/cube_frame_{:03}.bmp", i);
+        match write_image_to_file(&image_buffer, file_name.to_string()) {
+            Err(why) => panic!("Failed to write frame {} to file {}: {}", 0, file_name, why),
+            Ok(_) => (),
+        };
+
+        transform.yaw += 0.1;
+        image_buffer.clear();
+    }
+}
+
+#[allow(dead_code)]
+fn old_main() {
     let mut scene = create_test_images();
     let mut image_buffer = ImageBuffer::new(WIDTH, HEIGHT);
 
@@ -52,6 +81,27 @@ fn update(vertices: &mut Vec<Float2>, velocities: &mut Vec<Float2>, delta_t: f64
     }
 }
 
+fn load_cube_model() -> Model {
+    let obj_file = "models/cube.obj";
+    let cube_model_points = match read_to_string(obj_file) {
+        Ok(obj_str) => crate::formats::obj_format::load_obj_file(obj_str),
+        Err(why) => match why.kind() {
+            io::ErrorKind::NotFound => panic!("The path {} is non-existent! Make sure the folder structure exists.", obj_file),
+            io::ErrorKind::PermissionDenied => panic!("You don't have permissions to write to file \"{}\"", obj_file),
+            _ => panic!("Failed to open file {}: {}", obj_file, why),
+        }
+    };
+
+    // Initialize a randomizer
+    let mut g = rng();
+    let mut triangle_colors: Vec<Float3> = Vec::new();
+    for _ in 0..(cube_model_points.len() / 3) {
+        triangle_colors.push(random_color(&mut g))
+    }
+    Model { vertices: cube_model_points, triangle_colors }
+}
+
+#[allow(dead_code)]
 /// Generate randomly initialized triangles
 fn create_test_images() -> Scene {
     // Get the random vertices, triangle velocities and colors
