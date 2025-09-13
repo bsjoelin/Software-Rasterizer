@@ -4,9 +4,11 @@ use std::io;
 use std::iter::zip;
 
 mod formats;
+mod objects;
 mod rendering;
 mod vector_math;
 
+use crate::objects::Model;
 use crate::rendering::bitmap::image_to_bmp_buffer;
 use crate::rendering::image::ImageBuffer;
 use crate::rendering::pipeline;
@@ -23,20 +25,13 @@ struct Scene {
     triangle_colors: Vec<Float3>
 }
 
-struct Model {
-    vertices: Vec<Float3>,
-    triangle_colors: Vec<Float3>,
-}
-
 fn main() {
-    let cube_model = load_cube_model();
+    let mut cube_model = load_cube_model();
     let mut image_buffer = ImageBuffer::new(WIDTH, HEIGHT);
-    let cube_position = Float3::new(0.0, 0.0, 5.0);
-    let mut transform = Transform::new(0.0, 0.0, cube_position);
     let fov = 60.0;
 
     for i in 0..20 {
-        pipeline::render3d(&cube_model.vertices, &cube_model.triangle_colors, &transform, &mut image_buffer, fov);
+        pipeline::render3d(&cube_model, &mut image_buffer, fov);
     
         // Save the current stage of the image buffer to a bitmap
         let file_name = format!("images/cube_frame_{:03}.bmp", i);
@@ -45,8 +40,8 @@ fn main() {
             Ok(_) => (),
         };
 
-        transform.yaw += 0.1;
-        transform.pitch += 0.02;
+        cube_model.transform.yaw += 0.1;
+        cube_model.transform.pitch += 0.02;
         image_buffer.clear();
     }
 }
@@ -101,7 +96,13 @@ fn load_cube_model() -> Model {
     for _ in 0..(cube_model_points.len() / 3) {
         triangle_colors.push(random_color(&mut g))
     }
-    Model { vertices: cube_model_points, triangle_colors }
+    let position = Float3::new(0.0, 0.0, 5.0);
+
+    Model { 
+        vertices: cube_model_points, 
+        triangle_colors, 
+        transform: Transform::new(0.0, 0.0, position)
+    }
 }
 
 #[allow(dead_code)]

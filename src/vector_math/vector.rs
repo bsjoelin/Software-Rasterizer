@@ -56,6 +56,14 @@ impl<'a> Add<&'a Float3> for Float3 {
     }
 }
 
+impl AddAssign<Float3> for Float3 {
+    fn add_assign(&mut self, other: Float3) {
+        self.x += other.x;
+        self.y += other.y;
+        self.z += other.z;
+    }
+}
+
 impl Mul<f64> for Float3 {
     type Output = Float3;
     fn mul(self, rhs: f64) -> Self::Output {
