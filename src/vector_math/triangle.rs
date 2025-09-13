@@ -5,8 +5,9 @@ pub fn point_in_triangle(v1: &Float2, v2: &Float2, v3: &Float2, point: &Float2) 
     let right_of_12 = point_right_of_line(v1, v2, point);
     let right_of_23 = point_right_of_line(v2, v3, point);
     let right_of_31 = point_right_of_line(v3, v1, point);
+    // If the points are all right of, we are inside. Assumes clock-wise winding of vertices
     // If the point is on the same side, we are inside it
-    right_of_12 == right_of_23 && right_of_23 == right_of_31
+    right_of_12 && right_of_23 && right_of_31
 }
 
 /// Determine if `point` is to the _right_ of the line from `a` to `b`.
