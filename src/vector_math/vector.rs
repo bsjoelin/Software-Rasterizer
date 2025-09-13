@@ -35,6 +35,27 @@ impl Float3 {
     }
 }
 
+impl Add<f64> for Float3 {
+    type Output = Float3;
+    fn add(self, rhs: f64) -> Self::Output {
+        Self::Output { x: self.x + rhs, y: self.y + rhs, z: self.z + rhs }
+    }
+}
+
+impl Add<Float3> for Float3 {
+    type Output = Float3;
+    fn add(self, other: Float3) -> Self::Output {
+        Self::Output { x: self.x + other.x, y: self.y + other.y, z: self.z + other.z }
+    }
+}
+
+impl Mul<f64> for Float3 {
+    type Output = Float3;
+    fn mul(self, rhs: f64) -> Self::Output {
+        Self::Output { x: self.x * rhs, y: self.y * rhs, z: self.z * rhs }
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct Float2 {
     pub x: f64,
