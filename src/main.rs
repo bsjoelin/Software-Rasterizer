@@ -33,9 +33,10 @@ fn main() {
     let mut image_buffer = ImageBuffer::new(WIDTH, HEIGHT);
     let cube_position = Float3::new(0.0, 0.0, 5.0);
     let mut transform = Transform::new(0.0, 0.0, cube_position);
+    let fov = 60.0;
 
     for i in 0..20 {
-        pipeline::render3d(&cube_model.vertices, &cube_model.triangle_colors, &transform, &mut image_buffer);
+        pipeline::render3d(&cube_model.vertices, &cube_model.triangle_colors, &transform, &mut image_buffer, fov);
     
         // Save the current stage of the image buffer to a bitmap
         let file_name = format!("images/cube_frame_{:03}.bmp", i);

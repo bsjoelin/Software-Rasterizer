@@ -1,3 +1,5 @@
+use std::f64::consts::PI;
+
 use crate::rendering::image::ImageBuffer;
 use crate::rendering::transforms::{vertex_to_screen, Transform};
 use crate::vector_math::{vector::*, triangle::*};
@@ -24,16 +26,21 @@ pub fn render2d(vertices: &Vec<Float2>, colors: &Vec<Float3>, image: &mut ImageB
 }
 
 /// Render 3D triangles to an image buffer using rasterization
-pub fn render3d(vertices: &Vec<Float3>, colors: &Vec<Float3>, transform: &Transform, image: &mut ImageBuffer) -> () {
+/// 
+/// fov must be in degrees
+pub fn render3d(vertices: &Vec<Float3>, colors: &Vec<Float3>, transform: &Transform, image: &mut ImageBuffer, fov: f64) -> () {
     if image.get_size() == 0 {
         panic!("Image has no size!")
     }
 
+    let fov_rad = fov / 180.0 * PI;
+    let image_size = Float2::new(image.get_width() as f64, image.get_height() as f64);
+
     // Loop over the triangles
     for i in (0..vertices.len()).step_by(3) {
-        let a = vertex_to_screen(&vertices[i + 0], &transform, image.get_width(), image.get_height());
-        let b = vertex_to_screen(&vertices[i + 1], &transform, image.get_width(), image.get_height());
-        let c = vertex_to_screen(&vertices[i + 2], &transform, image.get_width(), image.get_height());
+        let a = vertex_to_screen(&vertices[i + 0], &transform, &image_size, fov_rad);
+        let b = vertex_to_screen(&vertices[i + 1], &transform, &image_size, fov_rad);
+        let c = vertex_to_screen(&vertices[i + 2], &transform, &image_size, fov_rad);
 
         let bbox = determine_bounding_box(&a, &b, &c, image.get_width(), image.get_height());
         paint_in_triangle(&a, &b, &c, bbox, colors[i / 3], image);

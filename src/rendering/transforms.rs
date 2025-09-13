@@ -38,13 +38,15 @@ impl Transform {
 }
 
 /// Transform vertex position into screen-space position [pixel coordinates]
-pub fn vertex_to_screen(vertex: &Float3, tranform: &Transform, width: usize, height: usize) -> Float2 {
-    let vertex_world = tranform.vertex_to_world(vertex);
+/// 
+/// The fov must be in radians
+pub fn vertex_to_screen(vertex: &Float3, transform: &Transform, screen_size: &Float2, fov: f64) -> Float2 {
+    let vertex_world = transform.vertex_to_world(vertex);
 
-    let world_screen_height = 5f64;
-    let pixel_factor = height as f64 / world_screen_height;
+    let world_screen_height = f64::tan(fov/2.0) * 2.0;
+    let pixel_factor = screen_size.y as f64 / world_screen_height / vertex_world.z;
 
     let mut pixel_offset = Float2::new(vertex_world.x, vertex_world.y) * pixel_factor;
-    pixel_offset += Float2::new(width as f64 / 2f64, height as f64 / 2f64);
+    pixel_offset += screen_size / 2.0;
     pixel_offset
 }

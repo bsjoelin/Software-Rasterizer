@@ -1,4 +1,4 @@
-use std::ops::{Add, AddAssign, Mul, Sub};
+use std::ops::{Add, AddAssign, Div, Mul, Sub};
 
 /// Float representation of 3D vector
 #[derive(Clone, Copy, Debug)]
@@ -122,7 +122,7 @@ impl AddAssign<Float2> for Float2 {
 }
 
 
-/// Implement subtraction between Float2 references
+/// Implement subtraction between Float2 reference and f64
 impl<'a, 'b> Sub<&'b Float2> for &'a Float2 {
     type Output = Float2;
 
@@ -131,7 +131,7 @@ impl<'a, 'b> Sub<&'b Float2> for &'a Float2 {
     }
 }
 
-/// Implement multiplication between Float2 references
+/// Implement multiplication between Float2 reference and f64
 impl<'a> Mul<f64> for &'a Float2 {
     type Output = Float2;
 
@@ -146,5 +146,12 @@ impl Mul<f64> for Float2 {
 
     fn mul(self, rhs: f64) -> Self::Output {
         Float2 {x: self.x * rhs, y: self.y * rhs}
+    }
+}
+
+impl<'a> Div<f64> for &'a Float2 {
+    type Output = Float2;
+    fn div(self, rhs: f64) -> Self::Output {
+        Self::Output { x: self.x / rhs, y: self.y / rhs }
     }
 }
