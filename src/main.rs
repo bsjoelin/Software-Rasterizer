@@ -10,7 +10,7 @@ mod vector_math;
 
 use crate::objects::Model;
 use crate::rendering::bitmap::image_to_bmp_buffer;
-use crate::rendering::image::ImageBuffer;
+use crate::rendering::RenderTarget;
 use crate::rendering::pipeline;
 use crate::rendering::transforms::Transform;
 use crate::vector_math::triangle::*;
@@ -27,42 +27,42 @@ struct Scene {
 
 fn main() {
     let mut model = load_suzanne_model();
-    let mut image_buffer = ImageBuffer::new(WIDTH, HEIGHT);
+    let mut render_target = RenderTarget::new(WIDTH, HEIGHT);
     let fov = 60.0;
 
     for i in 0..20 {
-        pipeline::render3d(&model, &mut image_buffer, fov);
+        pipeline::render3d(&model, &mut render_target.image_buffer, fov);
     
         // Save the current stage of the image buffer to a bitmap
         let file_name = format!("images/monkey_frame_{:03}.bmp", i);
-        match write_image_to_file(&image_buffer, file_name.to_string()) {
+        match write_image_to_file(&render_target.image_buffer, file_name.to_string()) {
             Err(why) => panic!("Failed to write frame {} to file {}: {}", 0, file_name, why),
             Ok(_) => (),
         };
 
         model.transform.yaw += 0.1;
         model.transform.pitch += 0.02;
-        image_buffer.clear();
+        render_target.clear();
     }
 }
 
 #[allow(dead_code)]
 fn old_main() {
     let mut scene = create_test_images();
-    let mut image_buffer = ImageBuffer::new(WIDTH, HEIGHT);
+    let mut render_target = RenderTarget::new(WIDTH, HEIGHT);
 
     for i in 0..5 {
-        pipeline::render2d(&scene.vertices, &scene.triangle_colors, &mut image_buffer);
+        pipeline::render2d(&scene.vertices, &scene.triangle_colors, &mut render_target.image_buffer);
     
         // Save the current stage of the image buffer to a bitmap
         let file_name = format!("images/test_frame_{:03}.bmp", i);
-        match write_image_to_file(&image_buffer, file_name.to_string()) {
+        match write_image_to_file(&render_target.image_buffer, file_name.to_string()) {
             Err(why) => panic!("Failed to write frame {} to file {}: {}", 0, file_name, why),
             Ok(_) => (),
         };
 
         update(&mut scene.vertices, &mut scene.vertex_velocities, 0.25);
-        image_buffer.clear();
+        render_target.clear();
     }
 }
 
@@ -181,7 +181,7 @@ fn random_color(rng: &mut ThreadRng) -> Float3 {
 
 #[allow(dead_code)]
 fn create_test_image() -> () {
-    let mut image = ImageBuffer::new(WIDTH, HEIGHT);
+    let mut image = rendering::image::ImageBuffer::new(WIDTH, HEIGHT);
     
     let a = Float2::new(0.2 * WIDTH as f64, 0.2 * HEIGHT as f64);
     let b = Float2::new(0.7 * WIDTH as f64, 0.4 * HEIGHT as f64);
@@ -209,7 +209,7 @@ fn create_test_image() -> () {
     };
 }
 
-fn write_image_to_file(image: &ImageBuffer, name: String) -> Result<(), io::Error> {
+fn write_image_to_file(image: &rendering::image::ImageBuffer, name: String) -> Result<(), io::Error> {
     let Ok(bmp_buffer) = image_to_bmp_buffer(&image) else {
         panic!("Failed to convert image to bitmap!");
     };
