@@ -49,6 +49,13 @@ impl Add<Float3> for Float3 {
     }
 }
 
+impl<'a> Add<&'a Float3> for Float3 {
+    type Output = Float3;
+    fn add(self, other: &'a Float3) -> Self::Output {
+        Self::Output { x: self.x + other.x, y: self.y + other.y, z: self.z + other.z }
+    }
+}
+
 impl Mul<f64> for Float3 {
     type Output = Float3;
     fn mul(self, rhs: f64) -> Self::Output {

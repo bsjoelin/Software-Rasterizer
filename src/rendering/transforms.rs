@@ -5,11 +5,13 @@ pub struct Transform {
     pub pitch: f64,
     /// Rotation around the z-axis (the up)
     pub yaw: f64,
+    /// World position
+    pub position: Float3,
 }
 
 impl Transform {
-    pub fn new(rotation_around_x: f64, rotation_around_z: f64) -> Self {
-        Self { pitch: rotation_around_x, yaw: rotation_around_z }
+    pub fn new(rotation_around_x: f64, rotation_around_z: f64, position: Float3) -> Self {
+        Self { pitch: rotation_around_x, yaw: rotation_around_z, position }
     }
 
     fn get_basis_vectors(&self) -> (Float3, Float3, Float3) {
@@ -27,7 +29,7 @@ impl Transform {
 
     pub fn vertex_to_world(&self, vertex: &Float3) -> Float3 {
         let (ihat, jhat, khat) = self.get_basis_vectors();
-        self.transform_vector(&ihat, &jhat, &khat, vertex)
+        self.transform_vector(&ihat, &jhat, &khat, vertex) + &self.position
     }
 
     fn transform_vector(&self, ih: &Float3, jh: &Float3, kh: &Float3, vertex: &Float3) -> Float3 {
